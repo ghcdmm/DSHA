@@ -63,6 +63,8 @@ public final class BridgeRoutes {
     TORCH(false),
     EXPORT(false),
     ENTRY_TARGET(false),
+    TERMUX_STATUS(false),
+    TERMUX_RUN(false),
     CONFIRM(true),
     EXEC(true),
     UNKNOWN(false);
@@ -137,6 +139,8 @@ public final class BridgeRoutes {
     add(routes, "/app/torch", Route.TORCH);
     add(routes, "/app/export", Route.EXPORT);
     add(routes, "/app/entry-target", Route.ENTRY_TARGET);
+    add(routes, "/app/termux/status", Route.TERMUX_STATUS);
+    add(routes, "/app/termux/run", Route.TERMUX_RUN);
     add(routes, "/confirm", Route.CONFIRM);
     add(routes, "/exec", Route.EXEC);
     return Collections.unmodifiableMap(routes);

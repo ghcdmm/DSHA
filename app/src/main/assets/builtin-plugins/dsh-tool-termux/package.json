@@ -1,0 +1,17 @@
+{
+  "name": "dsh-tool-termux",
+  "version": "0.1.0",
+  "description": "DSHA Termux on-demand script bridge (experimental)",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {"patch": "./cordis.patch.yml"}
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-mcp-client": ">=0.2.1-rc.5 <0.2.2 || >=0.2.2-rc.1 <0.2.3-0"
+  }
+}

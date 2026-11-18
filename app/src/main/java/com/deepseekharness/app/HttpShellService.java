@@ -330,6 +330,12 @@ public final class HttpShellService {
         });
     routes.put(BridgeRoutes.Route.EXPORT, (s, r) -> s.appExport(r.path));
     routes.put(BridgeRoutes.Route.ENTRY_TARGET, (s, r) -> s.appEntryTarget(r.path));
+    routes.put(BridgeRoutes.Route.TERMUX_STATUS,
+        (s, r) -> com.deepseekharness.app.termux.TermuxExecutionBridge.status(s.ctx));
+    routes.put(BridgeRoutes.Route.TERMUX_RUN,
+        (s, r) -> com.deepseekharness.app.termux.TermuxExecutionBridge.run(s.ctx,
+          r.param("script", ""), new String[] {r.param("arg0", ""), r.param("arg1", ""),
+          r.param("arg2", ""), r.param("arg3", "")}));
     routes.put(BridgeRoutes.Route.CONFIRM, (s, r) -> s.confirmReadOnly(r.command));
     routes.put(BridgeRoutes.Route.EXEC, (s, r) -> s.execOutput(r.command));
     return java.util.Collections.unmodifiableMap(routes);

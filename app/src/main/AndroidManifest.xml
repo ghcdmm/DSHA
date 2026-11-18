@@ -39,12 +39,15 @@
         android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+    <!-- User-granted Termux execution capability; opt in within Termux too. -->
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
 
     <queries>
         <intent><action android:name="android.speech.RecognitionService" /></intent>
         <package android:name="moe.shizuku.privileged.api" />
         <!-- Stellar 是兼容 Shizuku 协议的管理器（不声明 API_V23）；包可见性缺失会让安装检查查不到。 -->
         <package android:name="roro.stellar.manager" />
+        <package android:name="com.termux" />
         <intent><action android:name="rikka.shizuku.intent.action.REQUEST_BINDER" /></intent>
         <intent><action android:name="android.intent.action.OPEN_DOCUMENT" /><data android:mimeType="*/*" /></intent>
         <intent><action android:name="android.intent.action.GET_CONTENT" /><data android:mimeType="*/*" /></intent>
@@ -255,6 +258,7 @@
             android:name=".AdbKeepAliveReceiver"
             android:exported="false" />
 
+        <receiver android:name=".termux.TermuxResultReceiver" android:exported="false" />
         <receiver
             android:name=".ConfirmReceiver"
             android:exported="false" />
