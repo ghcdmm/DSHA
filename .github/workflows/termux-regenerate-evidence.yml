@@ -1,0 +1,66 @@
+name: Termux bridge source regeneration evidence
+on:
+  push:
+    branches: [feature/dsha-termux-bridge]
+permissions:
+  contents: read
+concurrency:
+  group: termux-regenerate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  inputs:
+    uses: ./.github/workflows/_node-inputs.yml
+    with:
+      rebuild_runtime: true
+      artifact: termux-regen-inputs
+  evidence:
+    needs: inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-toolchain
+      - uses: ./.github/actions/restore-handoff
+        with:
+          artifact: ${{ needs.inputs.outputs.artifact }}
+      - name: Format changed Java and regenerate descriptor (temporary CI worktree only)
+        run: |
+          set -euo pipefail
+          python3 tools/format-java.py --write --files \
+            app/src/main/java/com/deepseekharness/app/HttpShellService.java \
+            app/src/main/java/com/deepseekharness/app/util/BridgeRoutes.java \
+            app/src/main/java/com/deepseekharness/app/termux/TermuxExecutionBridge.java \
+            app/src/main/java/com/deepseekharness/app/termux/TermuxResultReceiver.java \
+            app/src/main/java/com/deepseekharness/app/termux/TermuxScriptPolicy.java \
+            app/src/test/java/com/deepseekharness/app/termux/TermuxScriptPolicyTest.java
+          python3 tools/prepare-runtime-descriptor.py --write
+          python3 - <<'PY'
+          import difflib, json, subprocess
+          from pathlib import Path
+          paths = [
+            'app/src/main/java/com/deepseekharness/app/HttpShellService.java',
+            'app/src/main/java/com/deepseekharness/app/util/BridgeRoutes.java',
+            'app/src/main/java/com/deepseekharness/app/termux/TermuxExecutionBridge.java',
+            'app/src/main/java/com/deepseekharness/app/termux/TermuxResultReceiver.java',
+            'app/src/main/java/com/deepseekharness/app/termux/TermuxScriptPolicy.java',
+            'app/src/test/java/com/deepseekharness/app/termux/TermuxScriptPolicyTest.java',
+          ]
+          for p in paths:
+            old = subprocess.check_output(['git','show','HEAD:'+p]).decode('utf8').splitlines(keepends=True)
+            new = Path(p).read_text(encoding='utf8').splitlines(keepends=True)
+            patch = [{'start':a,'end':b,'text':''.join(new[c:d])}
+                     for op,a,b,c,d in difflib.SequenceMatcher(None,old,new,autojunk=False).get_opcodes()
+                     if op!='equal']
+            if patch:
+              print('TERMUX_FORMAT_PATCH='+json.dumps({'path':p,'ops':patch},ensure_ascii=False,separators=(',',':')),flush=True)
+          p='app/src/main/assets/runtime-descriptor.json'
+          old=json.loads(subprocess.check_output(['git','show','HEAD:'+p]))
+          new=json.loads(Path(p).read_text(encoding='utf8'))
+          out={'runtimeId':new['runtimeId']}
+          for field in ['inputs','launcherInputs']:
+            out[field]={k:v for k,v in new[field].items() if old[field].get(k)!=v}
+            out[field+'Removed']=sorted(set(old[field])-set(new[field]))
+          print('TERMUX_DESCRIPTOR_PATCH='+json.dumps(out,ensure_ascii=False,separators=(',',':')),flush=True)
+          PY
