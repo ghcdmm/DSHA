@@ -467,6 +467,26 @@
       "executable": false
     },
     {
+      "asset": "builtin-plugins/dsh-tool-termux/cordis.patch.yml",
+      "target": "root/dsha-tool-termux/cordis.patch.yml",
+      "executable": false
+    },
+    {
+      "asset": "builtin-plugins/dsh-tool-termux/lib/index.js",
+      "target": "root/dsha-tool-termux/lib/index.js",
+      "executable": false
+    },
+    {
+      "asset": "builtin-plugins/dsh-tool-termux/lib/server.cjs",
+      "target": "root/dsha-tool-termux/lib/server.cjs",
+      "executable": false
+    },
+    {
+      "asset": "builtin-plugins/dsh-tool-termux/package.json",
+      "target": "root/dsha-tool-termux/package.json",
+      "executable": false
+    },
+    {
       "asset": "builtin-plugins/dsh-launch-target/package.json",
       "target": "root/dsha-launch-target/package.json",
       "executable": false
