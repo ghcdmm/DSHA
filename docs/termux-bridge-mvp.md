@@ -27,13 +27,13 @@ This branch adds an **opt-in, on-demand Termux runner** to DSHA. It uses the off
    ```
 
    Run `chmod 700 ~/.dsha-bridge/scripts/probe.sh`.
-4. Install the separately signed `.debug` APK from the Actions workflow's artifact, **only after the build passes**. This is a different package from your production DSHA app.
+4. Install the separately signed `.debug` APK from the Actions run's APK artifact (the filename itself is the artifact label), **only after the build passes**. This is a different package from your production DSHA app.
 5. Grant the test DSHA app the Android permission **Run commands in Termux environment** in system settings. Permission labels depend on the device. Termux must allow external commands, and background restrictions may still block startup.
 6. Ask DSH to call `termux_status`, then `termux_script` with `name: "probe"`. Confirm stdout/stderr/exit code.
 
 ## Build
 
-On the feature branch, `.github/workflows/termux-bridge-apk.yml` is configured to run on push and generate a test-signed APK via DSHA's pinned runtime-input and Android SDK actions. Check **Actions** in your fork and enable workflows if GitHub suspended them after forking. The workflow does **not** create a release, does not use your production keystore and does not upload secrets. Each run uses a new signing certificate, so successive test APKs cannot replace each other without uninstalling.
+On the feature branch, `.github/workflows/termux-bridge-apk.yml` is configured to run on push and generate a test-signed APK via DSHA's pinned runtime-input and Android SDK actions. Check **Actions** in your fork and enable workflows if GitHub suspended them after forking. The workflow uses DSHA's existing reusable test-package signing node (no direct signing code in the custom workflow). It does **not** create a release or use a production keystore. With no test-signing secrets configured, each run uses a new ephemeral certificate, so successive test APKs cannot replace each other without uninstalling.
 
 CI requires large fixed upstream runtime archives, the Android toolchain and network access; no claim is made that any build has passed until GitHub Actions actually reports success.
 
