@@ -8,15 +8,18 @@ public final class TermuxScriptPolicy {
   public static final String HOME = "/data/data/com.termux/files/home";
   public static final String SCRIPTS = HOME + "/.dsha-bridge/scripts";
   public static final String BASH = "/data/data/com.termux/files/usr/bin/bash";
+
   private TermuxScriptPolicy() {}
 
   public static boolean validName(String name) {
     return name != null && NAME.matcher(name).matches();
   }
+
   public static String scriptPath(String name) {
     if (!validName(name)) throw new IllegalArgumentException("INVALID_SCRIPT_NAME");
     return SCRIPTS + "/" + name + ".sh";
   }
+
   public static boolean validArgument(String value) {
     if (value == null || value.length() > 200) return false;
     for (int i = 0; i < value.length(); i++) {

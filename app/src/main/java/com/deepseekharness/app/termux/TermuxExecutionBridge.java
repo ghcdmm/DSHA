@@ -27,30 +27,40 @@ public final class TermuxExecutionBridge {
   private static final Semaphore SLOT = new Semaphore(1);
   private static final ConcurrentHashMap<String, CompletableFuture<JSONObject>> PENDING =
       new ConcurrentHashMap<>();
+
   private TermuxExecutionBridge() {}
 
   private static String receipt(String state, String reason) {
-    try { return new JSONObject().put("state", state).put("reason", reason).toString(); }
-    catch (Exception e) { return "{\"state\":\"FAILED\",\"reason\":\"JSON_ERROR\"}"; }
+    try {
+      return new JSONObject().put("state", state).put("reason", reason).toString();
+    } catch (Exception e) {
+      return "{\"state\":\"FAILED\",\"reason\":\"JSON_ERROR\"}";
+    }
   }
+
   private static String preflight(Context ctx) {
-    try { ctx.getPackageManager().getPackageInfo(PACKAGE, 0); }
-    catch (PackageManager.NameNotFoundException e) { return "TERMUX_NOT_INSTALLED"; }
+    try {
+      ctx.getPackageManager().getPackageInfo(PACKAGE, 0);
+    } catch (PackageManager.NameNotFoundException e) {
+      return "TERMUX_NOT_INSTALLED";
+    }
     if (ctx.checkSelfPermission(PERMISSION) != PackageManager.PERMISSION_GRANTED)
       return "RUN_COMMAND_PERMISSION_MISSING";
     return null;
   }
+
   public static String status(Context ctx) {
     String missing = preflight(ctx);
     return missing == null
         ? receipt("READY", "Check Termux allow-external-apps=true before execution")
         : receipt("NOT_READY", missing);
   }
+
   public static String run(Context ctx, String name, String[] arguments) {
     if (!TermuxScriptPolicy.validName(name)) return receipt("NOT_SENT", "INVALID_SCRIPT_NAME");
     if (arguments == null || arguments.length > 4) return receipt("NOT_SENT", "INVALID_ARGUMENTS");
-    for (String value : arguments) if (!TermuxScriptPolicy.validArgument(value))
-      return receipt("NOT_SENT", "INVALID_ARGUMENTS");
+    for (String value : arguments)
+      if (!TermuxScriptPolicy.validArgument(value)) return receipt("NOT_SENT", "INVALID_ARGUMENTS");
     String missing = preflight(ctx);
     if (missing != null) return receipt("NOT_SENT", missing);
     if (!SLOT.tryAcquire()) return receipt("NOT_SENT", "BUSY");
@@ -96,22 +106,26 @@ public final class TermuxExecutionBridge {
       SLOT.release();
     }
   }
+
   static void complete(String id, Bundle bundle) {
     CompletableFuture<JSONObject> future = PENDING.get(id);
     if (future == null) return;
     try {
       if (bundle == null) {
-        future.complete(new JSONObject().put("state", "UNKNOWN").put("reason", "MISSING_RESULT_BUNDLE"));
+        future.complete(
+            new JSONObject().put("state", "UNKNOWN").put("reason", "MISSING_RESULT_BUNDLE"));
         return;
       }
       int err = bundle.getInt("err", -1);
       int exit = bundle.getInt("exitCode", -9999);
-      JSONObject result = new JSONObject()
-          .put("state", err == -1 && exit == 0 ? "COMPLETED" : "FAILED")
-          .put("exitCode", exit).put("termuxError", err)
-          .put("stdout", bundle.getString("stdout", ""))
-          .put("stderr", bundle.getString("stderr", ""))
-          .put("errorMessage", bundle.getString("errmsg", ""));
+      JSONObject result =
+          new JSONObject()
+              .put("state", err == -1 && exit == 0 ? "COMPLETED" : "FAILED")
+              .put("exitCode", exit)
+              .put("termuxError", err)
+              .put("stdout", bundle.getString("stdout", ""))
+              .put("stderr", bundle.getString("stderr", ""))
+              .put("errorMessage", bundle.getString("errmsg", ""));
       future.complete(result);
     } catch (Exception e) {
       future.complete(new JSONObject());
