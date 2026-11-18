@@ -34,6 +34,7 @@ jobs:
         run: |
           node --check app/src/main/assets/builtin-plugins/dsh-tool-termux/lib/server.cjs
           node --check app/src/main/assets/builtin-plugins/dsh-tool-termux/lib/index.js
+          node --test tools/termux-bridge-tests/test_server.cjs
           node -e "const m=require('./app/src/main/assets/builtin-plugins/dsh-tool-termux/lib/server.cjs'); if(m.tools.length!==2)process.exit(1); m.validate({name:'probe',args:[]});"
       - name: Run script policy unit tests
         run: |
