@@ -650,7 +650,8 @@
     "app/src/main/java/com/deepseekharness/app/device",
     "app/src/main/java/com/deepseekharness/app/diagnostics",
     "app/src/main/java/com/deepseekharness/app/plugins",
-    "app/src/main/java/com/deepseekharness/app/saf"
+    "app/src/main/java/com/deepseekharness/app/saf",
+    "app/src/main/java/com/deepseekharness/app/termux"
   ],
   "launcherSources": [
     "util/ComposeGate.java",
